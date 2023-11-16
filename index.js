@@ -23,23 +23,35 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+
+
+    const menuCollection = client.db("BistroBossDB").collection("menu");
+    const cartCollection = client.db("BistroBossDB").collection("carts");
+
+
+
+    app.get("/menu", async (req, res) => {
+      const result = await menuCollection.find().toArray()
+      res.send(result)
+    })
     
+    app.post("/carts", async(req, res)=>{
+      const carts = req.body
+      const result = await cartCollection.insertOne(carts)
+      res.send(result)
+    })
+    app.get("/carts", async(req, res)=>{
+      const email = req.query.email;
+      const query = {email: email}
+      const result = await cartCollection.find(query).toArray()
+      res.send(result)
+    })
 
-const menuCollection =client.db("BistroBossDB").collection("menu");
-
-
-
-app.get("/menu", async(req, res)=>{
-    const result = await menuCollection.find().toArray()
-    res.send(result)
-})
-
-
- client.connect(); 
- client.db("admin").command({ ping: 1 });
+    client.connect();
+    client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-   
+
   }
 }
 run().catch(console.dir);
