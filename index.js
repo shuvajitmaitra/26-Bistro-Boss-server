@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken")
 require('dotenv').config()
 const app = express();
 
@@ -21,6 +22,7 @@ const client = new MongoClient(uri, {
   }
 });
 
+
 async function run() {
   try {
 
@@ -28,6 +30,8 @@ async function run() {
     const menuCollection = client.db("BistroBossDB").collection("menu");
     const usersCollection = client.db("BistroBossDB").collection("users");
     const cartCollection = client.db("BistroBossDB").collection("carts");
+    // jwt related api
+
 
     // user related api
     app.post("/users", async(req, res)=>{
@@ -42,6 +46,35 @@ async function run() {
     })
 
 
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.delete('/users/:id', async(req, res)=>{
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await usersCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    app.patch('/users/admin/:id', async(req, res)=>{
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const options = { upsert: true };
+      const updateDoc = {
+        $set:{
+          role: "admin"
+        }
+      } 
+
+      const result = await usersCollection.updateOne(query, updateDoc, options)
+      res.send(result)
+    })
+
+
+
+    // menu related api
     app.get("/menu", async (req, res) => {
       const result = await menuCollection.find().toArray()
       res.send(result)
